@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="WebApplicationAuth.Tests/WebApplicationAuth.Tests.csproj" />
+  <Project Path="WebApplicationAuth/WebApplicationAuth.csproj" />
+</Solution>
