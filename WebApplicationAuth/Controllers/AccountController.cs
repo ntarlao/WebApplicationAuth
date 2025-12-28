@@ -6,6 +6,10 @@ using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace WebApplicationAuth.Controllers
 {
@@ -13,6 +17,7 @@ namespace WebApplicationAuth.Controllers
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IConfiguration _configuration;
 
         // Conexión a base de datos SQLite en memoria compartida por la aplicación
         private static readonly SqliteConnection _inMemoryConnection;
@@ -40,10 +45,11 @@ namespace WebApplicationAuth.Controllers
             cmdInsert.ExecuteNonQuery();
         }
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -149,6 +155,24 @@ namespace WebApplicationAuth.Controllers
 
             // No existe
             return Ok(new { success = false });
+        }
+
+        // Genera un token JWT para el usuario autenticado.
+        private string GenerateJwtToken(IdentityUser user)
+        {
+            // Configuración de la clave y parámetros del token
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SigningKey"]));
+            var signinCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            var tokenOptions = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:ValidAudiences"],
+                claims: new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) },
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["JwtSettings:TokenExpiryMinutes"])),
+                signingCredentials: signinCredentials
+            );
+
+            // Devolver token generado
+            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
         }
 
         // Elimina etiquetas de script, codifica HTML y descarta patrones SQL peligrosos.
