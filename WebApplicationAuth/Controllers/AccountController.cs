@@ -25,7 +25,7 @@ namespace WebApplicationAuth.Controllers
         static AccountController()
         {
             // Cadena de conexión para una DB SQLite en memoria que persiste mientras haya al menos una conexión abierta.
-            _inMemoryConnection = new SqliteConnection("Data Source=file:InMemoryDb?mode=memory&cache=shared");
+            _inMemoryConnection = new SqliteConnection("Data Source=file:InMemoryUserAuthApp?mode=memory&cache=shared");
             _inMemoryConnection.Open();
 
             // Crear tabla Users y sembrar un usuario de ejemplo usando sentencias parametrizadas.

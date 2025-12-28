@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -15,6 +16,7 @@ namespace WebApplicationAuth.Tests
         private static AccountController CreateController()
         {
             // Construir UserManager mock mínimo
+            var configuration = new Mock<IConfiguration>().Object;
             var userStoreMock = new Mock<IUserStore<IdentityUser>>().Object;
             var userManagerMock = new Mock<UserManager<IdentityUser>>(
                 userStoreMock,
@@ -37,7 +39,7 @@ namespace WebApplicationAuth.Tests
                 Mock.Of<IAuthenticationSchemeProvider>(),
                 Mock.Of<IUserConfirmation<IdentityUser>>()).Object;
 
-            return new AccountController(userManagerMock, signInManagerMock);
+            return new AccountController(userManagerMock, signInManagerMock, configuration);
         }
 
         [Fact]

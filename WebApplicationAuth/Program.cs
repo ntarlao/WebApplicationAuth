@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,8 +34,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        Issuer = builder.Configuration["JwtSettings:Issuer"],
-        Audience = builder.Configuration["JwtSettings:ValidAudiences"],
+        //Issuer = builder.Configuration["JwtSettings:Issuer"],
+        //Audience = builder.Configuration["JwtSettings:ValidAudiences"],
         LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
         {
             return expires != null && expires > DateTime.UtcNow;
