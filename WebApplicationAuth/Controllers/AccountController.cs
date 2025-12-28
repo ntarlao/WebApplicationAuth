@@ -1,10 +1,11 @@
-﻿using System.Data;
-using System.Net;
-using System.Text.RegularExpressions;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using System.Data;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace WebApplicationAuth.Controllers
 {
@@ -90,7 +91,33 @@ namespace WebApplicationAuth.Controllers
             }
             return View(model);
         }
+        // Nuevo endpoint: eliminar usuario por id — solo accesible para rol "Admin".
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        [Route("account/users/{id}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest(new { success = false, error = "Invalid user id." });
+            }
 
+            // Buscar usuario por Id usando UserManager (Identity)
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { success = false, error = "User not found." });
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors?.Select(e => e.Description) ?? Enumerable.Empty<string>();
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, errors });
+            }
+
+            return Ok(new { success = true });
+        }
         // Método solicitado: recibe usuario y contraseña, valida y sanitiza, consulta DB en memoria con parámetros.
         [HttpPost]
         [Route("account/login-secure")]
